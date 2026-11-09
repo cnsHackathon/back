@@ -1,3 +1,49 @@
 spring:
   application:
     name: cns
+  config:
+    # Gemini 키 같은 개인 설정. 깃에 올라가지 않는 파일이에요. (README 참고)
+    import: optional:classpath:application-local.yaml
+  datasource:
+    url: jdbc:h2:mem:cns;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+
+server:
+  port: 8080
+
+logging:
+  # 터미널과 함께 back/logs/cns.log에도 남겨요. (깃에는 안 올라가요)
+  file:
+    name: logs/cns.log
+
+app:
+  call-time-limit: 10m
+  # Vite 프록시를 거쳐도 브라우저의 Origin 헤더가 넘어와서 CORS 검사를 받아요.
+  # 프론트 포트가 5173, 5174처럼 바뀌어도 되도록 포트는 열어 둡니다. 배포 주소가 생기면 여기에 추가해요.
+  cors-allowed-origin-patterns:
+    - http://localhost:*
+    - http://127.0.0.1:*
+
+gemini:
+  api-key: ${GEMINI_API_KEY:}
+  base-url: https://generativelanguage.googleapis.com/v1beta
+  # 2026-11-09 측정: 3.6-flash(LOW) 1.8초, 3.5-flash-lite 1.2초. 3.8-flash는 혼잡(503)으로 40초 넘게 걸렸어요.
+  model: gemini-3.6-flash
+  # 첫 시도가 실패하면(혼잡 503, 시간 초과 등) 두 번째 시도는 이 모델로 해요.
+  fallback-model: gemini-3.5-flash-lite
+  safety-threshold: BLOCK_ONLY_HIGH
+  turn:
+    model: ""
+    thinking-level: LOW
+    max-output-tokens: 2048
+    timeout: 20s
+  report:
+    model: ""
+    thinking-level: ""
+    max-output-tokens: 8192
+    timeout: 60s
