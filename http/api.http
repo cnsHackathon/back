@@ -1,0 +1,45 @@
+### 1. 통화 준비 (시나리오 배정 + 사기범 첫 발화)
+POST http://localhost:8080/api/sessions
+Content-Type: application/json
+
+{
+  "ageGroup": "50대",
+  "gender": "FEMALE",
+  "job": "자영업자",
+  "married": true,
+  "children": [{ "gender": "MALE", "ageGroup": "성인" }],
+  "region": "서울 마포구"
+}
+
+> {% client.global.set("sessionId", response.body.sessionId); %}
+
+### 1-1. 시나리오를 골라서 준비 (개발·시연용)
+POST http://localhost:8080/api/sessions
+Content-Type: application/json
+
+{
+  "ageGroup": "40대",
+  "gender": "MALE",
+  "job": "자영업자",
+  "scenarioId": "noshow-military-01"
+}
+
+> {% client.global.set("sessionId", response.body.sessionId); %}
+
+### 2. 받기 (10분 시작)
+POST http://localhost:8080/api/sessions/{{sessionId}}/start
+
+### 3. 답변 보내기
+POST http://localhost:8080/api/sessions/{{sessionId}}/turns
+Content-Type: application/json
+
+{ "userText": "누구시라고요? 제가 대표번호로 다시 걸어서 확인할게요.", "isFinal": false }
+
+### 4. 끊기
+POST http://localhost:8080/api/sessions/{{sessionId}}/end
+Content-Type: application/json
+
+{ "reason": "HANG_UP" }
+
+### 5. 리포트
+GET http://localhost:8080/api/sessions/{{sessionId}}/report
